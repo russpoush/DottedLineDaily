@@ -12,7 +12,9 @@
 - Streaks and a "money you'd have kept" tally, saved in your browser.
 
 ## Status
-This is a prototype for testing. "Pro" is a preview only, and no payment is taken.
+This is a prototype for testing. No payment is taken.
+
+**Free trial (test of willingness to pay):** each tester gets 7 days with everything unlocked. On day 8 the full library locks: the daily case stays free, and a "Your free week is over" screen asks whether they'd pay $3/month (Yes / Maybe at a lower price / No). The trial is tracked in the tester's browser only. To restart it on your own device, open the site with `#tester-reset` at the end of the URL.
 
 The documents and companies are fictional. The explanations are general education, not legal or financial advice. Rules vary by state, and a professional hasn't reviewed the content yet. Each batch of cases is fact-checked by a separate reviewer before it's published.
 

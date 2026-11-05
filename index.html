@@ -712,7 +712,15 @@ const store = {
   set(k,v){try{localStorage.setItem("dottedline:"+k,JSON.stringify(v))}catch(e){}}
 };
 let S = {view:"home", caseIdx:null, flags:new Set(), submitted:false,
-  results: store.get("results",{}), pro: store.get("pro",false)};
+  results: store.get("results",{})};
+
+// ---------- free trial (client-side, for testing only) ----------
+const TRIAL_DAYS = 7;
+if(location.hash==="#tester-reset"){ store.set("trialStart",null); store.set("vote",null); store.set("endShown",null); history.replaceState(null,"",location.pathname); }
+const today0 = () => { const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); };
+if(!store.get("trialStart",null)) store.set("trialStart", today0());
+const trialLeft = () => Math.max(0, TRIAL_DAYS - Math.floor((today0() - store.get("trialStart",today0())) / 864e5));
+const isPro = () => trialLeft() > 0;
 
 const dayIndex = () => Math.max(0, Math.floor((new Date().setHours(0,0,0,0) - LAUNCH) / 864e5));
 const todayIdx = () => dayIndex() % CASES.length;
@@ -742,7 +750,7 @@ const esc = s => s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':
 
 function header(){
   return `<header><button class="logo" data-go="home"><span class="mark">⚑</span>${APP_NAME}</button>
-  <button class="pill ${S.pro?"pro":""}" data-act="pro">${S.pro?"Pro preview on":"Go Pro · $3/mo"}</button></header>`;
+  <button class="pill ${isPro()?"pro":""}" data-act="pro">${isPro()?`Free trial · ${trialLeft()} day${trialLeft()===1?"":"s"} left`:"Go Pro · $3/mo"}</button></header>`;
 }
 
 function home(){
@@ -751,7 +759,7 @@ function home(){
   const archive = CASES.map((x,i)=>{
     if(i===t) return "";
     if(S.track && S.track!=="All" && x.track!==S.track) return "";
-    const done=S.results[x.id], locked=!S.pro;
+    const done=S.results[x.id], locked=!isPro();
     return `<button class="case" data-open="${i}" ${locked?'data-locked="1"':""}>
       <div><b>${x.title}</b><br><small>${x.track}</small></div>
       <span class="tag ${done?"done":locked?"lock":""}">${done?`${done.caught}/${done.total} caught`:locked?"🔒 Pro":"Play"}</span></button>`;
@@ -825,7 +833,7 @@ function results(){
     <div class="script"><b>What to say</b>“${t.trap.script}”<button class="copy" data-copy="${esc(t.trap.script)}">Copy</button></div>
   </div>`).join("")}
   ${decoys.length?`<h2>Why these were fine</h2>`+decoys.map(d=>`<div class="decoy"><b>Line ${d.i+1}:</b> ${d.ok}</div>`).join(""):""}
-  ${!S.pro?`<div class="hero" style="margin-top:18px"><b>Want more practice?</b><p class="muted" style="margin:4px 0 10px">Pro unlocks every past case, skill tracks for housing, money, health and work, and a library of every negotiation script.</p><button class="btn" data-act="pro">See Pro</button></div>`:""}
+  ${!isPro()?`<div class="hero" style="margin-top:18px"><b>Want more practice?</b><p class="muted" style="margin:4px 0 10px">Pro unlocks every past case, skill tracks for housing, money, health and work, and a library of every negotiation script.</p><button class="btn" data-act="pro">See Pro</button></div>`:""}
   <h2>The document</h2>`;
 }
 
@@ -850,18 +858,36 @@ function submit(){
 function toast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),1600)}
 async function copy(text){try{await navigator.clipboard.writeText(text);toast("Copied")}catch(e){toast("Couldn't copy. Select the text instead.")}}
 function proModal(){
-  document.getElementById("modal").innerHTML=`
-    <div class="eyebrow">${APP_NAME} Pro</div>
-    <div class="price">$3<span style="font-size:15px;font-weight:500" class="muted">/month</span> <span style="font-size:14px" class="muted">or $24/year</span></div>
-    <p class="muted">One caught trap usually pays for years of Pro.</p>
-    <ul>
+  const left=trialLeft(), vote=store.get("vote",null);
+  const perks=`<ul>
       <li><b>Full case library</b>: all ${CASES.length} documents, any time, with new cases every month</li>
       <li><b>Skill tracks</b>: housing, money, health, work, everyday</li>
       <li><b>Script library</b>: every "what to say" line, searchable</li>
       <li><b>Expert rounds</b>: replay cases with the trap count hidden</li>
-    </ul>
-    <div class="row"><button class="btn" data-act="togglepro">${S.pro?"Turn off Pro preview":"Preview Pro (prototype)"}</button><button class="btn alt" data-act="close">Not now</button></div>
-    <div class="note">Prototype: no payment is taken. The preview unlocks the archive so you can try every case.</div>`;
+    </ul>`;
+  const price=`<div class="price">$3<span style="font-size:15px;font-weight:500" class="muted">/month</span> <span style="font-size:14px" class="muted">or $24/year</span></div>`;
+  document.getElementById("modal").innerHTML = left>0 ? `
+    <div class="eyebrow">Free trial · ${left} day${left===1?"":"s"} left</div>
+    <h1 style="font-size:20px">Everything is unlocked this week</h1>
+    ${perks}
+    <p class="muted">After your free week, the daily case stays free. The full library is ${APP_NAME} Pro.</p>
+    ${price}
+    <div class="row"><button class="btn" data-act="close">Keep practicing</button></div>
+    <div class="note">Prototype: no payment is taken.</div>` : `
+    <div class="eyebrow">Your free week is over</div>
+    <h1 style="font-size:20px">Keep the full library with ${APP_NAME} Pro</h1>
+    ${price}
+    <p class="muted">One caught trap usually pays for years of Pro. Today's case is still free.</p>
+    ${perks}
+    <p><b>Would you pay $3/month for this?</b></p>
+    <div class="row">
+      <button class="btn ${vote==="yes"?"accent":"alt"}" data-vote="yes">Yes</button>
+      <button class="btn ${vote==="maybe"?"accent":"alt"}" data-vote="maybe">Maybe, at a lower price</button>
+      <button class="btn ${vote==="no"?"accent":"alt"}" data-vote="no">No</button>
+    </div>
+    ${FEEDBACK_URL?`<p style="margin-top:12px"><a href="${FEEDBACK_URL}" target="_blank" rel="noopener">Tell us why (1 min) →</a></p>`:""}
+    <div class="note">Prototype: no payment is taken; this is a test of whether people would pay.</div>
+    <div class="row" style="margin-top:10px"><button class="btn alt" data-act="close">Not now</button></div>`;
   document.getElementById("scrim").classList.add("on");
 }
 
@@ -869,6 +895,7 @@ document.addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b) return;
   if(b.dataset.copy){copy(b.dataset.copy);return}
   if(b.dataset.track){S.track=b.dataset.track;render();return}
+  if(b.dataset.vote){store.set("vote",b.dataset.vote);toast("Thanks, that really helps");proModal();return}
   if(b.dataset.go==="home"){S.view="home";render();window.scrollTo(0,0);return}
   if(b.dataset.open!==undefined){ if(b.dataset.locked){proModal();return} openCase(+b.dataset.open);return}
   if(b.dataset.line!==undefined && !S.submitted){const i=+b.dataset.line;S.flags.has(i)?S.flags.delete(i):S.flags.add(i);render();return}
@@ -876,7 +903,6 @@ document.addEventListener("click",e=>{
   if(a==="submit") submit();
   else if(a==="pro") proModal();
   else if(a==="close") document.getElementById("scrim").classList.remove("on");
-  else if(a==="togglepro"){S.pro=!S.pro;store.set("pro",S.pro);document.getElementById("scrim").classList.remove("on");render()}
   else if(a==="share"){
     const c=CASES[S.caseIdx], r=S.results[rkey(S.caseIdx)];
     const traps=c.lines.map((l,i)=>({l,i})).filter(x=>x.l.trap);
@@ -886,6 +912,7 @@ document.addEventListener("click",e=>{
 });
 document.getElementById("scrim").addEventListener("click",e=>{if(e.target.id==="scrim")e.target.classList.remove("on")});
 render();
+if(!isPro() && !store.get("endShown",false)){ store.set("endShown",true); proModal(); }
 </script>
 </body>
 </html>
