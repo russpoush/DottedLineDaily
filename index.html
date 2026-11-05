@@ -185,23 +185,26 @@ const CASES = [
 },
 {
   id:"job", track:"Work", title:"Job offer letter",
-  org:"Brightline Analytics — Offer of Employment", setting:"You got the job! The recruiter wants a signature by Friday.",
+  org:"Brightline Analytics — Offer of Employment", setting:"You got the job! The recruiter emails the offer letter and asks for a signature by Friday.",
   lines:[
-    {t:"1. Base salary: $82,000 per year, paid biweekly.", ok:"Clear and guaranteed."},
-    {t:"2. Target annual bonus of 15% of base salary, paid in March based on company and individual performance.", ok:"Performance bonuses vary; that's normal. Just don't count it as guaranteed income."},
-    {t:"3. Signing bonus: $10,000, paid with your first paycheck. If your employment ends for any reason within 24 months of your start date, you agree to repay the full signing bonus.",
-      trap:{amt:10000, name:"Full clawback, even if they lay you off", why:"'For any reason' includes being laid off. And it's the full amount, not prorated, so leaving at month 23 costs the same as leaving at month 1.", cost:"Up to $10,000 (and it was taxed when paid, so repaying can cost more than you received).",
-      script:"Could we prorate the repayment monthly and exclude termination without cause? That way it protects you if I leave early but doesn't penalize me for a layoff."}},
-    {t:"4. Employment is at-will; either party may end it at any time.", ok:"Standard in almost every U.S. state."},
-    {t:"5. Health, dental and 401(k) benefits begin on the first of the month after 30 days of employment.", ok:"Common. Plan for a short gap in coverage."},
-    {t:"6. For 18 months after leaving, you will not work for or provide services to any business that competes with the Company anywhere in the United States.",
-      trap:{amt:0, name:"Broad non-compete", why:"18 months, nationwide, any competitor. That could keep you out of your field. Several states, including California and Minnesota, ban most non-competes, and many others limit them, but fighting one is still costly.", cost:"Potentially a year and a half of lost job options in your field.",
-      script:"Could we narrow this to a non-solicitation of clients, or limit it to 6 months and to direct competitors I actually worked with?"}},
-    {t:"7. You assign to the Company all inventions, works and ideas conceived during your employment, whether or not developed on Company time or with Company resources.",
-      trap:{amt:0, name:"Grabs your side projects", why:"This claims things you make on weekends with your own laptop. Some states, such as California, Washington and Illinois, limit these clauses, but only partly.", cost:"Ownership of any side project, app or writing you create while employed.",
-      script:"Please limit this to work related to the Company's business or created with Company resources, and attach a list of my existing side projects as excluded."}},
-    {t:"8. Paid time off: 15 days per year, plus company holidays.", ok:"A decent baseline."},
-    {t:"9. This offer is contingent on a satisfactory background check.", ok:"Normal."}
+    {t:"Position: Senior Data Analyst, reporting to the Director of Analytics. Full-time, exempt.", ok:"Just the role. 'Exempt' means salaried with no overtime, which is normal for this kind of job."},
+    {t:"Compensation: $82,000 annual base salary, paid biweekly, reviewed annually at the Company's discretion.", ok:"Raises being discretionary is standard. The base salary itself is guaranteed."},
+    {t:"Variable pay: You are eligible for the Annual Incentive Plan at a 15% target. Payouts are determined under the Plan document and require active employment on the payout date.", ok:"Common for bonus plans. Worth knowing if you plan to leave around payout time, but not a trap."},
+    {t:"Sign-on bonus: $10,000, paid in your first regular payroll, subject to the terms of Appendix B.", ok:"The bonus itself is fine. The catch is in Appendix B, so always read what a clause points to."},
+    {t:"At-will employment: Either you or the Company may end employment at any time, with or without cause or notice.", ok:"Sounds harsh, but it's the default in almost every U.S. state, so no letter can avoid it."},
+    {t:"Dispute resolution: Employment disputes will be resolved through binding individual arbitration. You may opt out within 30 days of your start date by written notice to HR.", ok:"Arbitration is common. This version gives you a 30-day opt-out, which is the fair kind. Note the date if you'd rather keep the right to go to court."},
+    {t:"Protective covenants: As a condition of employment, you will sign the Company's standard Employee Confidentiality and Restrictive Covenant Agreement.",
+      trap:{amt:0, name:"Agreeing to a document you haven't seen", why:"'Restrictive covenant' usually means a non-compete or non-solicit, and it's in a separate agreement you haven't been shown. It could bar you from working for competitors for a year or more. Several states, including California and Minnesota, ban most non-competes, and others limit them, but challenging one is costly.", cost:"Possibly a year or more of lost job options in your field.",
+      script:"Before I sign, could you send me the Restrictive Covenant Agreement? If it includes a non-compete, I'd like to discuss narrowing it to a non-solicitation of clients I worked with."}},
+    {t:"Inventions: You agree to assign to the Company all Inventions conceived or reduced to practice during the term of your employment.",
+      trap:{amt:0, name:"Claims your side projects", why:"'During the term of your employment' has no limit to company time, equipment or business, so it covers an app you build on weekends. Some states, such as California, Washington and Illinois, limit these clauses, but only partly.", cost:"Ownership of any side project you create while employed.",
+      script:"Could we limit this to inventions related to the Company's business or made with Company resources? I'd also like to attach a list of my existing projects as excluded."}},
+    {t:"Benefits: Medical, dental and 401(k) eligibility begins on the first of the month following 30 days of employment.", ok:"Common. Plan for a short gap in coverage."},
+    {t:"Paid time off: 15 days per year, accruing each pay period. Unused PTO is paid out at separation where required by state law.", ok:"A decent baseline and honest about state law."},
+    {t:"Appendix B — Sign-on bonus: The sign-on bonus is earned upon completion of 24 months of service. Any unearned bonus is repayable within 30 days of separation from employment.",
+      trap:{amt:10000, name:"Full repayment, even after a layoff", why:"'Earned upon completion of 24 months' means none of it is earned until day 730, so it isn't prorated. 'Separation' includes being laid off. Leaving at month 23 costs as much as month 1, and the bonus was taxed when paid, so repaying can cost more than you received.", cost:"Up to $10,000.",
+      script:"Could Appendix B prorate the bonus monthly over the 24 months and exclude separation without cause? That protects you if I leave early without penalizing me for a layoff."}},
+    {t:"Contingencies: This offer is contingent on a background check and Form I-9 employment eligibility verification.", ok:"Normal for nearly every job."}
   ]
 }
 ];
