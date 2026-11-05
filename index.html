@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dotted Line Daily</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f1ea; --ink:#1d1d1f; --muted:#6b6760; --line:#e2ddd2; --paper:#fffdf8;
+  --accent:#c2410c; --accent-soft:#fde7d9; --good:#15803d; --good-soft:#dcfce7;
+  --bad:#b91c1c; --bad-soft:#fee2e2; --flag:#fef3c7; --flag-edge:#d97706; --card:#ffffff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 80px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.logo{font-weight:700;font-size:20px;letter-spacing:-.02em;display:flex;align-items:center;gap:8px;background:none;border:0;padding:0;color:var(--ink)}
+.logo .mark{width:26px;height:26px;border-radius:6px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px}
+.pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
+.pill.pro{background:var(--ink);color:#fff;border-color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.stat b{display:block;font-size:22px;letter-spacing:-.02em}
+.stat span{font-size:12px;color:var(--muted)}
+.hero{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:18px}
+.eyebrow{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent)}
+h1{font-size:24px;letter-spacing:-.02em;margin:6px 0 6px}
+h2{font-size:17px;margin:24px 0 10px}
+.muted{color:var(--muted)}
+.btn{background:var(--ink);color:#fff;border:0;border-radius:10px;padding:11px 18px;font-weight:600}
+.btn.alt{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn.accent{background:var(--accent)}
+.btn:disabled{opacity:.4;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.list{display:grid;gap:8px}
+.case{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:left;width:100%;color:var(--ink)}
+.case small{color:var(--muted)}
+.case .tag{font-size:12px;border-radius:999px;padding:3px 9px;background:var(--bg);color:var(--muted);white-space:nowrap}
+.case .tag.done{background:var(--good-soft);color:var(--good)}
+.case .tag.lock{background:#eee;color:#555}
+/* document */
+.docbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.paper{background:var(--paper);border:1px solid var(--line);border-radius:6px;box-shadow:0 1px 0 #e9e3d6,0 8px 24px rgba(0,0,0,.05);padding:28px 26px;font-family:"Source Serif 4",Georgia,serif;font-size:15.5px}
+.paper h3{font-family:Inter,sans-serif;font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 2px}
+.paper .sub{font-size:13px;color:var(--muted);margin-bottom:16px;font-family:Inter,sans-serif}
+.clause{display:block;width:100%;text-align:left;background:none;border:1px solid transparent;border-radius:6px;padding:8px 72px 8px 34px;margin:2px 0;position:relative;color:var(--ink);font:inherit;line-height:1.55}
+.clause:hover{background:#f7f2e6}
+.clause .n{position:absolute;left:8px;top:9px;font:600 11px Inter,sans-serif;color:#a39d90}
+.clause.flagged{background:var(--flag);border-color:var(--flag-edge)}
+.clause.flagged .n{color:var(--flag-edge)}
+.clause.flagged::after{content:"⚑";position:absolute;right:10px;top:7px;color:var(--flag-edge)}
+.clause.hit{background:var(--good-soft);border-color:var(--good)}
+.clause.miss{background:var(--bad-soft);border-color:var(--bad);border-style:dashed}
+.clause.false{background:#f3f4f6;border-color:#9ca3af;text-decoration:line-through;text-decoration-color:#9ca3af}
+.clause.hit::after{content:"✓ caught";color:var(--good);font:600 11px Inter;position:absolute;right:10px;top:9px}
+.clause.miss::after{content:"missed";color:var(--bad);font:600 11px Inter;position:absolute;right:10px;top:9px}
+.clause.false::after{content:"fine";color:#6b7280;font:600 11px Inter;position:absolute;right:10px;top:9px}
+.clause[disabled]{cursor:default}
+.clause.table{font-family:ui-monospace,Menlo,monospace;font-size:13px}
+/* results */
+.score{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:18px 0}
+.big{font-size:30px;font-weight:700;letter-spacing:-.03em}
+.squares{font-size:20px;letter-spacing:2px}
+.trap{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--good);border-radius:12px;padding:16px;margin:10px 0}
+.trap.missed{border-left-color:var(--bad)}
+.trap h4{margin:0 0 4px;font-size:16px}
+.trap .cost{display:inline-block;background:var(--accent-soft);color:var(--accent);font-weight:600;font-size:13px;border-radius:6px;padding:3px 8px;margin:6px 0}
+.script{background:#f8f7f4;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px;font-family:"Source Serif 4",Georgia,serif;font-style:italic;position:relative}
+.script b{font-family:Inter;font-style:normal;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px}
+.copy{position:absolute;top:8px;right:8px;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:2px 8px}
+.decoy{background:var(--card);border:1px solid var(--line);border-left:4px solid #9ca3af;border-radius:12px;padding:12px 16px;margin:8px 0;font-size:14px}
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(20,18,15,.5);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+.scrim.on{display:flex}
+.modal{background:var(--card);border-radius:18px;max-width:440px;width:100%;padding:24px}
+.modal ul{padding-left:18px;margin:10px 0 16px}
+.modal li{margin:4px 0}
+.price{font-size:28px;font-weight:700}
+.note{font-size:12px;color:var(--muted);margin-top:10px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;transition:.2s;pointer-events:none}
+.toast.on{opacity:1}
+.foot{font-size:12px;color:var(--muted);margin-top:30px;border-top:1px solid var(--line);padding-top:12px}
+@media(max-width:520px){.paper{padding:20px 12px}.clause{padding-left:30px;padding-right:64px}.big{font-size:26px}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="scrim" id="scrim"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const APP_NAME = "Dotted Line Daily"; // working name for testing; trademark not cleared
+const FEEDBACK_URL = ""; // Google Form link for testers
+const LAUNCH = new Date(2026, 10, 4); // case #1 = Nov 4, 2026
+
+const CASES = [
+{
+  id:"gym", track:"Everyday", title:"Gym membership agreement",
+  org:"IronLeaf Fitness — Membership Agreement", setting:"You're about to sign up at a new gym. The front desk hands you this.",
+  lines:[
+    {t:"1. Monthly dues: $29.99, drafted automatically from your account on the 1st of each month.", ok:"Clear price, clear date. Nothing hidden."},
+    {t:"2. Initial term: 12 months. After the initial term, membership continues month to month until cancelled.", ok:"Going month to month after a year is normal, and it's better than auto-renewing for another full year."},
+    {t:"3. Annual Club Enhancement Fee: $49.99, billed 60 days after the start date and on each anniversary thereafter.",
+      trap:{amt:50, name:"Hidden annual fee", why:"It's billed two months in, after you've stopped reading statements closely. It's not in the advertised price, and it renews every year.", cost:"$49.99 a year. Your real price is $34.16/month, not $29.99.",
+      script:"I'd like the annual enhancement fee waived before I sign. If you can't waive it, please write the all-in yearly cost on the agreement so I can compare it with other gyms."}},
+    {t:"4. Members may freeze their membership for up to 3 months per year at $10.00 per month.", ok:"A paid freeze option is normal and can save you money when you're traveling or injured."},
+    {t:"5. Cancellation requires written notice delivered by certified mail or in person at your home club. Thirty (30) days' notice is required; dues continue to be billed during the notice period.",
+      trap:{amt:30, name:"Hard-to-cancel clause", why:"Certified mail or an in-person visit is designed to make you put it off, and the 30-day notice adds a month of billing. Some states require that you can cancel the same way you signed up (for example online), so check your state.", cost:"At least one extra month ($29.99), plus postage and a trip. Often several months, because people delay.",
+      script:"Before I sign: can I cancel by email or online? Please write that on the agreement. If not, I'd like the notice period removed."}},
+    {t:"6. Early termination during the initial term: Member will owe 50% of the dues remaining in the initial term.",
+      trap:{amt:120, name:"Early termination fee", why:"If you move, get hurt or just stop going in month 4, you still owe half of the year. Combined with the hard-to-cancel clause, quitting early gets expensive.", cost:"Cancel after 4 months: 50% × 8 × $29.99 = $119.96.",
+      script:"Do you have a no-contract, month-to-month option? I'm happy to pay a few dollars more a month to skip the 12-month commitment."}},
+    {t:"7. Each membership includes two (2) guest passes per month.", ok:"A perk, not a trap."},
+    {t:"8. Dues may change with thirty (30) days' written notice.", ok:"Common. You get notice, and after the initial term you can leave."},
+    {t:"9. Member assumes the risk of injury from ordinary use of the facilities and equipment.", ok:"A standard liability waiver. In most places it doesn't protect the gym from gross negligence."}
+  ]
+},
+{
+  id:"lease", track:"Housing", title:"Apartment lease",
+  org:"Maple Court Apartments — Residential Lease (excerpt)", setting:"You found a great apartment. The manager emails the lease and wants it signed today.",
+  lines:[
+    {t:"1. Rent: $1,450.00 per month, due on the 1st.", ok:"Normal."},
+    {t:"2. Rent received after 11:59 p.m. on the 5th is considered late.", ok:"A five-day grace period is generous and common."},
+    {t:"3. Late fee: $75.00 on the 6th, plus $10.00 per day until rent is paid in full.",
+      trap:{amt:175, name:"Uncapped daily late fee", why:"The daily charge has no maximum, so one bad month snowballs. Many states cap residential late fees or require them to be 'reasonable,' so this clause may not even be enforceable where you live.", cost:"10 days late: $175 (12% of rent). A full month late: $325.",
+      script:"Could we cap the total late fee at $75? A daily fee with no cap is a dealbreaker for me, and I'd want to check whether it's allowed under our state's rules anyway."}},
+    {t:"4. Security deposit: $1,450.00, returned within 30 days of move-out, less itemized deductions for damage.", ok:"One month's deposit with itemized deductions is standard."},
+    {t:"5. A non-refundable redecorating fee of $350.00 will be deducted from the security deposit at move-out regardless of the unit's condition.",
+      trap:{amt:350, name:"Non-refundable fee hidden in the deposit", why:"A deposit is supposed to cover actual damage. This takes $350 even if you leave the place spotless. Some states, including California, don't allow any part of a security deposit to be non-refundable.", cost:"$350 kept from your deposit, guaranteed.",
+      script:"Please strike the redecorating fee. I'm fine with deductions for actual, itemized damage beyond normal wear and tear."}},
+    {t:"6. This lease automatically renews for an additional twelve (12) month term unless either party gives written notice at least 60 days before the end date.",
+      trap:{amt:2900, name:"Automatic 12-month renewal", why:"Miss one date two months before your lease ends and you're locked in for another full year. Getting out then means the break fee in line 9.", cost:"If you miss the window and have to move: $2,900 (two months' rent).",
+      script:"Can we change this so the lease converts to month-to-month after the term, instead of renewing for 12 months? If not, I'd like a written reminder 90 days before the notice deadline."}},
+    {t:"7. Tenant is responsible for damage caused by tenant or guests beyond normal wear and tear.", ok:"Fair and standard."},
+    {t:"8. Pets require written approval and a $300 refundable pet deposit.", ok:"Refundable, written approval. Normal."},
+    {t:"9. Tenant may end the lease early by paying a fee equal to two (2) months' rent.", ok:"A clear, fixed early-exit fee is actually tenant-friendly; without one you might owe all the remaining rent."},
+    {t:"10. Landlord may enter with 24 hours' notice for repairs or inspections, or without notice in an emergency.", ok:"Standard, and matches the rules in most states."}
+  ]
+},
+{
+  id:"car", track:"Money", title:"Car loan offer",
+  org:"Retail Installment Contract — Summary of Terms", setting:"You've spent four hours at the dealership. The finance manager slides this across the desk: \"Your payment is only $456.\"",
+  lines:[
+    {t:"Vehicle cash price ........................ $26,500.00", ok:"The price you negotiated.", cls:"table"},
+    {t:"Down payment .............................. $3,000.00", ok:"Normal.", cls:"table"},
+    {t:"Optional products: GAP coverage $895 · Paint & fabric protection $699 · Extended service contract $2,495",
+      cls:"table", trap:{amt:5684, name:"Add-ons rolled into the loan", why:"They're 'optional', but they were added without being itemized out loud, and now you pay interest on them for seven years. GAP coverage is often much cheaper through your own car insurer.", cost:"$4,089 up front, about $5,684 with interest over 84 months.",
+      script:"Please remove the GAP, paint protection and service contract and reprint the contract. I'll decide on coverage separately after checking with my insurer."}},
+    {t:"Amount financed ........................... $27,589.00", ok:"This is just the math: price − down payment + add-ons.", cls:"table"},
+    {t:"APR 9.90%  ·  Term: 84 months", cls:"table",
+      trap:{amt:3264, name:"Stretched 84-month term", why:"The low payment comes from stretching the loan to seven years, not from a good deal. You pay more interest and will likely owe more than the car is worth for years.", cost:"$10,764 in total interest. The same loan over 60 months: $7,501. That's $3,264 more.",
+      script:"Show me the numbers at 60 months, and the total cost of the loan, not just the monthly payment. I'd also like to compare against the rate my credit union pre-approved."}},
+    {t:"Monthly payment ........................... $456.59", ok:"Correct for the terms above, but look at what's behind it.", cls:"table"},
+    {t:"Conditional delivery: Buyer may take the vehicle before financing is final. If Dealer cannot assign this contract to a lender within 10 days, Buyer must return the vehicle or sign a new contract on terms then available.",
+      trap:{amt:0, name:"\"Yo-yo\" financing", why:"You drive home thinking the deal is done. Days later the dealer calls: the financing 'fell through' and you must sign at a higher rate. By then your trade-in may be gone.", cost:"Unknown, and that's the danger. A few points of APR on this loan adds thousands.",
+      script:"I won't take delivery until the financing is final. Can you confirm in writing that a lender has approved this contract at these terms?"}},
+    {t:"Prepayment: Buyer may pay off this contract early without penalty.", ok:"Good! No prepayment penalty means you can refinance or pay it down."},
+    {t:"Late charge: 5% of the scheduled payment if more than 10 days late.", ok:"Typical and capped."}
+  ]
+},
+{
+  id:"medical", track:"Health", title:"Hospital bill",
+  org:"Lakeside Regional Medical Center — Itemized Statement", setting:"You had a planned knee arthroscopy at an in-network hospital. Six weeks later, this arrives.",
+  lines:[
+    {t:"09/12  Operating room, first 60 min ............. $4,200.00", ok:"High-sounding, but normal for an OR charge. Insurance adjusts it.", cls:"table"},
+    {t:"09/12  Recovery room ............................. $780.00", ok:"Expected for outpatient surgery.", cls:"table"},
+    {t:"09/12  Hinged knee brace (L1832) × 1 ............. $310.00", ok:"You did go home with a brace.", cls:"table"},
+    {t:"09/12  Hinged knee brace (L1832) × 1 ............. $310.00", cls:"table",
+      trap:{amt:310, name:"Duplicate charge", why:"Same code, same date, same price, and you left with one brace. Duplicate lines are among the most common billing errors.", cost:"$310, passed straight to you.",
+      script:"Line 4 duplicates line 3: same code L1832, same date, and I received one brace. Please remove it and send a corrected itemized statement."}},
+    {t:"09/12  Pharmacy: ondansetron 4 mg ................ $96.00", ok:"Hospital drug prices are steep, but you received this anti-nausea medication and it's billed once."},
+    {t:"09/12  Insurance payment / contractual adjustment . −$4,236.00", ok:"Your insurer paid and the hospital wrote off the rest. Normal.", cls:"table"},
+    {t:"Your in-network deductible and coinsurance ....... $1,150.00", ok:"This is your actual share under your plan. Check it matches your insurer's Explanation of Benefits.", cls:"table"},
+    {t:"Anesthesia — Valley Anesthesia Partners (out-of-network): balance due $1,940.00",
+      trap:{amt:1940, name:"Surprise out-of-network bill", why:"You chose an in-network hospital; you didn't choose the anesthesiologist. Under the federal No Surprises Act (in effect since 2022), out-of-network anesthesiologists at in-network facilities generally can't bill you more than your in-network cost-sharing.", cost:"$1,940 you likely don't owe.",
+      script:"This anesthesia was provided at an in-network facility, so under the No Surprises Act I should only owe in-network cost-sharing. Please reprocess the claim and stop billing me the balance. I'll file a complaint with the federal No Surprises Help Desk if needed."}},
+    {t:"Pay over time with the MedFlex Card — No interest if paid in full within 12 months!",
+      trap:{amt:509, name:"Deferred-interest card", why:"'No interest if paid in full' is deferred interest. If even $1 is left at month 12, interest is charged back to day one at a high card rate. It's also offered before you've checked whether the bill is right.", cost:"Example: $3,400 at 26.99%, paying $275/month leaves $100 at month 12 and triggers about $509 in back interest.",
+      script:"I'd prefer an interest-free payment plan directly with the hospital. Most hospitals offer one. Also, please hold the account while I dispute two charges."}},
+    {t:"Questions? Request a fully itemized bill or financial assistance at (555) 014-2200.", ok:"Always do this. Nonprofit hospitals must have financial assistance policies."}
+  ]
+},
+{
+  id:"job", track:"Work", title:"Job offer letter",
+  org:"Brightline Analytics — Offer of Employment", setting:"You got the job! The recruiter wants a signature by Friday.",
+  lines:[
+    {t:"1. Base salary: $82,000 per year, paid biweekly.", ok:"Clear and guaranteed."},
+    {t:"2. Target annual bonus of 15% of base salary, paid in March based on company and individual performance.", ok:"Performance bonuses vary; that's normal. Just don't count it as guaranteed income."},
+    {t:"3. Signing bonus: $10,000, paid with your first paycheck. If your employment ends for any reason within 24 months of your start date, you agree to repay the full signing bonus.",
+      trap:{amt:10000, name:"Full clawback, even if they lay you off", why:"'For any reason' includes being laid off. And it's the full amount, not prorated, so leaving at month 23 costs the same as leaving at month 1.", cost:"Up to $10,000 (and it was taxed when paid, so repaying can cost more than you received).",
+      script:"Could we prorate the repayment monthly and exclude termination without cause? That way it protects you if I leave early but doesn't penalize me for a layoff."}},
+    {t:"4. Employment is at-will; either party may end it at any time.", ok:"Standard in almost every U.S. state."},
+    {t:"5. Health, dental and 401(k) benefits begin on the first of the month after 30 days of employment.", ok:"Common. Plan for a short gap in coverage."},
+    {t:"6. For 18 months after leaving, you will not work for or provide services to any business that competes with the Company anywhere in the United States.",
+      trap:{amt:0, name:"Broad non-compete", why:"18 months, nationwide, any competitor. That could keep you out of your field. Several states, including California and Minnesota, ban most non-competes, and many others limit them, but fighting one is still costly.", cost:"Potentially a year and a half of lost job options in your field.",
+      script:"Could we narrow this to a non-solicitation of clients, or limit it to 6 months and to direct competitors I actually worked with?"}},
+    {t:"7. You assign to the Company all inventions, works and ideas conceived during your employment, whether or not developed on Company time or with Company resources.",
+      trap:{amt:0, name:"Grabs your side projects", why:"This claims things you make on weekends with your own laptop. Some states, such as California, Washington and Illinois, limit these clauses, but only partly.", cost:"Ownership of any side project, app or writing you create while employed.",
+      script:"Please limit this to work related to the Company's business or created with Company resources, and attach a list of my existing side projects as excluded."}},
+    {t:"8. Paid time off: 15 days per year, plus company holidays.", ok:"A decent baseline."},
+    {t:"9. This offer is contingent on a satisfactory background check.", ok:"Normal."}
+  ]
+}
+];
+
+const CASES2 = [
+{
+  id:"phone", track:"Everyday", title:"\"Free phone\" offer",
+  org:"Carrier Store — Device & Plan Agreement", setting:"The sign says FREE iPhone with a new line. The rep prints this for you to sign.",
+  lines:[
+    {t:"Device: Smartphone 256GB, full retail price $829.99, financed over 36 months at 0% APR.", ok:"Normal: the phone is financed, not given away. 0% is genuinely 0%."},
+    {t:"Promotion: $23.06/month in bill credits for 36 months, equal to the device price, while the line stays active on an eligible plan.",
+      trap:{amt:1260, name:"\"Free\" only if you stay three years on a premium plan", why:"The phone isn't free; the credits cancel out its payments only if you keep this line on an eligible plan for 36 months. Drop to a cheaper plan and the credits stop, so you're paying for the phone.", cost:"Eligible plan is $85/month vs. a $50 plan you'd otherwise pick: $35 × 36 = $1,260 extra.",
+      script:"What's the total I'll pay over 36 months on this plan, including the phone? And what would the same phone cost if I bought it outright and used your $50 plan?"}},
+    {t:"If you cancel service or transfer the line, remaining bill credits end and the remaining device balance is due immediately.",
+      trap:{amt:415, name:"Leave early, owe the rest at once", why:"This works like a 3-year contract without the word 'contract.' Switch carriers in year 2 and the unpaid phone balance comes due in one bill.", cost:"Leave after 18 months: $415 due at once.",
+      script:"If I switch carriers after a year, exactly how much would I owe that day? Please write it down for me."}},
+    {t:"One-time activation fee: $35, charged on your first bill.",
+      trap:{amt:35, name:"Activation fee", why:"A small fee, but often waivable, especially on a new line. Store reps can usually remove it if you ask before you sign.", cost:"$35.",
+      script:"Can you waive the activation fee? I'm adding a new line today."}},
+    {t:"Unlimited premium data; after 50GB in a month, your data may be temporarily slowed during network congestion.", ok:"Standard 'deprioritization' language. Most people never hit 50GB."},
+    {t:"You may return the device within 14 days in like-new condition.", ok:"A return window is a good thing. Mark the date."},
+    {t:"Taxes and surcharges are billed in addition to the plan price.", ok:"Normal; ask the rep for an estimate of taxes and fees in your area."}
+  ]
+},
+{
+  id:"rentfees", track:"Housing", title:"Apartment fee addendum",
+  org:"The Lofts at Riverbend — Fees & Services Addendum", setting:"You're signing for an apartment advertised at $1,295/month. This addendum came at the end of the stack.",
+  lines:[
+    {t:"1. Base monthly rent: $1,295.00.", ok:"Matches the ad."},
+    {t:"2. Required monthly services: Amenity fee $35 · Technology package $45 · Valet trash $30 · Utility billing admin fee $12. These services are mandatory and may not be declined.",
+      trap:{amt:1464, name:"Mandatory monthly fees not in the advertised rent", why:"If you can't decline it, it's rent with a different name. These four fees make the real rent $1,417, not $1,295. Several states and cities now require these to be included in the advertised rent.", cost:"$122/month: $1,464 a year, $1,586 over the 13-month lease.",
+      script:"What's the total I'll pay each month, every fee included? I'm comparing apartments on that number. Can any of these be removed, especially the technology package if I bring my own internet?"}},
+    {t:"3. Move-in concession: one month free ($1,295) on a 13-month lease. If the lease ends early for any reason, the full concession is immediately due.",
+      trap:{amt:1295, name:"\"Free month\" clawback", why:"The free month is a loan that's forgiven only if you finish the lease. 'For any reason' includes a job transfer, and this comes on top of any break fee.", cost:"$1,295 owed back if you leave early.",
+      script:"Instead of a free month with a clawback, could you lower the monthly rent by $100 for the term? Or prorate the repayment by the months I've stayed?"}},
+    {t:"4. Renter's insurance with $100,000 liability is required. If proof is not provided within 7 days, Resident will be enrolled in the community's program at $18/month.",
+      trap:{amt:216, name:"Auto-enrollment in the landlord's insurance", why:"Requiring renter's insurance is common. The catch is the silent auto-enroll: miss the 7-day deadline and you pay for a landlord-chosen policy that often covers only the landlord, not your belongings.", cost:"$18/month = $216 a year, often for less coverage than a $10–15/month policy of your own.",
+      script:"I'll buy my own policy. Please confirm in writing you won't enroll me as long as I send proof by move-in, and tell me exactly where to send it."}},
+    {t:"5. Pet rent: $35/month per pet (if applicable).", ok:"Common, disclosed and only applies if you have a pet."},
+    {t:"6. Garage parking (optional): $75/month.", ok:"Optional. You can decline it."},
+    {t:"7. Application fee $50 (non-refundable) covers screening.", ok:"Screening fees are normal; many states cap them."}
+  ]
+},
+{
+  id:"payday", track:"Money", title:"Payday loan agreement",
+  org:"QuickCash Advance — Deferred Deposit Agreement", setting:"Your car needs a $400 repair before payday. The storefront says 'Approved in minutes.'",
+  lines:[
+    {t:"Amount advanced: $400.00", ok:"The amount you asked for.", cls:"table"},
+    {t:"Finance charge: $60.00 ($15 per $100), due in full in 14 days.", cls:"table",
+      trap:{amt:60, name:"A 390% annual rate hiding as a flat fee", why:"$15 per $100 sounds small. Over two weeks, it works out to about a 390% APR. Look for the APR box on the agreement: lenders must show it.", cost:"$60 for two weeks; about $1,560 if you kept $400 borrowed for a year.",
+      script:"What's the APR on this loan? I'd like to see it before I sign. (Then compare: credit unions offer small 'payday alternative loans' capped at 28% APR.)"}},
+    {t:"If you cannot repay on the due date, you may renew by paying the $60 finance charge; the $400 principal rolls over for another 14 days.",
+      trap:{amt:300, name:"Rollover trap", why:"Each renewal costs another $60 and pays down nothing. Many borrowers renew again and again; this is how a $400 loan becomes a $1,000 problem.", cost:"Five renewals: $300 in fees and you still owe $400.",
+      script:"If I can't repay in full, do you offer an extended payment plan with no added fees? Many states require lenders to offer one."}},
+    {t:"Borrower authorizes Lender to debit the account on the due date and to re-attempt the debit if it is returned.",
+      trap:{amt:70, name:"Repeated withdrawal attempts", why:"Each failed attempt can trigger a bank fee to you, on top of the lender's returned-payment fee. Several attempts in a week can stack up fast.", cost:"Two failed attempts at a $35 bank fee each: $70, plus the lender's $25 return fee.",
+      script:"I'd rather pay by cash or debit card on the due date than authorize automatic withdrawals. Can I strike that authorization?"}},
+    {t:"Lender license number: DL-20481, issued by the state Department of Financial Institutions.", ok:"Good sign: you can look up the license. Unlicensed online lenders are a bigger risk."},
+    {t:"Borrower may cancel this agreement without cost by returning the $400 by 5:00 p.m. the next business day.", ok:"A free cancellation window. Useful if you find cheaper money."}
+  ]
+},
+{
+  id:"eob", track:"Health", title:"Doctor's bill vs. insurance statement",
+  org:"Northside Family Practice — Patient Statement", setting:"You paid your $40 copay at check-in for a follow-up visit. Your insurer's Explanation of Benefits (EOB) says you owe $120. Then this bill arrives.",
+  lines:[
+    {t:"03/18  Office visit, established patient (99214) ............ $310.00", ok:"The provider's list price. Insurance will reduce it.", cls:"table"},
+    {t:"03/18  Lab: comprehensive metabolic panel ......................... $85.00", ok:"You had blood drawn. Fine.", cls:"table"},
+    {t:"03/18  Lab: lipid panel ........................................... $95.00", ok:"Also drawn that day. Fine.", cls:"table"},
+    {t:"Insurance paid ........................................... −$150.00", ok:"Matches the EOB's 'plan paid' amount.", cls:"table"},
+    {t:"Payments received ........................................ $0.00", cls:"table",
+      trap:{amt:40, name:"Your copay wasn't credited", why:"You paid $40 at check-in. It's not on the statement, so you'd pay it twice. Keep receipts from the front desk.", cost:"$40.",
+      script:"I paid a $40 copay at check-in on 3/18. Here's my receipt. Please apply it and send an updated statement."}},
+    {t:"BALANCE DUE ........................................... $340.00", cls:"table",
+      trap:{amt:220, name:"Bill is higher than the EOB says you owe", why:"Your insurer's EOB says your share is $120. An in-network provider generally agreed to accept the insurer's allowed amount and can't bill you the difference. That's called balance billing.", cost:"$340 billed vs. $120 owed: $220 too much (and $80 after your copay is credited).",
+      script:"My EOB for this visit shows patient responsibility of $120. As an in-network provider, please adjust the balance to match the EOB and credit my $40 copay, for a balance of $80."}},
+    {t:"Pay online or call billing at (555) 014-7781. Payment plans available.", ok:"Normal. Call billing, not the front desk, for disputes."}
+  ]
+},
+{
+  id:"freelance", track:"Work", title:"Freelance design contract",
+  org:"Statement of Work — Brand Refresh for Halcyon Coffee Co.", setting:"A new client wants a logo and brand guide. Your quote: $4,500. They sent their standard contract.",
+  lines:[
+    {t:"1. Fee: $4,500 for logo, color palette and a 10-page brand guide.", ok:"Clear scope and price."},
+    {t:"2. Payment: invoices are payable Net 90 from the date of approval of final deliverables.",
+      trap:{amt:0, name:"Net 90 from 'final approval'", why:"You might wait three months after a date the client controls. If they never 'approve,' the clock never starts. Freelancers commonly ask for a deposit and Net 15–30.", cost:"$4,500 paid months late, or never if approval is held back.",
+      script:"My standard terms are 50% upfront and the balance Net 15 from delivery. Could we use that, with approval deemed given 10 business days after delivery if there's no written feedback?"}},
+    {t:"3. Revisions: Contractor will revise deliverables until Client is fully satisfied.",
+      trap:{amt:1500, name:"Unlimited revisions", why:"No limit means the project can grow forever for the same fee. Most freelancers include 2–3 rounds and bill more after that.", cost:"Each extra round can take 5–10 hours. 10 extra hours at $150/hour is $1,500 of free work.",
+      script:"The fee includes two rounds of revisions. Further rounds are billed at $150/hour. Can we add that to section 3?"}},
+    {t:"4. All rights to work product transfer to Client upon delivery.",
+      trap:{amt:4500, name:"Rights transfer before you're paid", why:"If ownership moves on delivery, the client can use your logo even if they never pay. Tie the transfer to payment.", cost:"Your leverage on the full $4,500.",
+      script:"Rights transfer upon receipt of full payment. Until then, the work stays licensed for review only. Please update section 4."}},
+    {t:"5. Contractor may display the final work in a portfolio after public launch.", ok:"Good: protects your ability to show your work."},
+    {t:"6. Either party may end this agreement with 14 days' written notice.", ok:"Fair, but check that you get paid for work done to date if they cancel. Ask for a kill fee if not."}
+  ]
+},
+{
+  id:"mortgage", track:"Housing", title:"Mortgage Loan Estimate",
+  org:"Loan Estimate — 30-Year Fixed Rate (page 1 summary)", setting:"You're buying your first home. Lenders must give you this standard 3-page form within 3 business days of applying.",
+  lines:[
+    {t:"Loan amount: $320,000  ·  Loan term: 30 years  ·  Product: Fixed rate", ok:"What you applied for.", cls:"table"},
+    {t:"Interest rate: 6.75%  ·  Rate lock: NO. Your interest rate can change and the estimate will expire.", cls:"table",
+      trap:{amt:6447, name:"Rate isn't locked", why:"Until the rate is locked, every number on this form can move. If rates rise before you lock, your payment rises too.", cost:"If the rate rises to 7.25% before you lock: about $107/month more: $6,447 over five years, and $38,682 over the full 30 years.",
+      script:"Can we lock this rate today? What's the lock period, and is there a fee to extend it if closing slips?"}},
+    {t:"Monthly principal & interest: $2,075.51", ok:"Correct for $320,000 at 6.75% over 30 years.", cls:"table"},
+    {t:"Prepayment penalty: YES. As high as $6,400 if you pay off the loan during the first 3 years.", cls:"table",
+      trap:{amt:6400, name:"Prepayment penalty", why:"If you sell, or refinance when rates drop, in the first three years, you pay up to $6,400 for the privilege. Most fixed-rate mortgages today have no prepayment penalty.", cost:"Up to $6,400.",
+      script:"I'd like a version of this loan with no prepayment penalty. What would the rate be?"}},
+    {t:"Balloon payment: NO", ok:"Good: no lump sum due at the end.", cls:"table"},
+    {t:"Points: 1.5% of loan amount ($4,800) to lower your interest rate from 7.00%.", cls:"table",
+      trap:{amt:4800, name:"Paying points you may never earn back", why:"Points buy a lower rate, but it takes a while to break even. Here you save $53.45/month, so you need about 90 months, roughly 7.5 years, before the $4,800 pays off. Most people sell or refinance sooner.", cost:"$4,800 upfront; lost if you move or refinance within ~7.5 years.",
+      script:"Please send me an estimate with zero points so I can compare. What's the break-even point in months?"}},
+    {t:"Estimated cash to close: $88,410 (includes $80,000 down payment on a $400,000 home).", ok:"Expected for a 20% down payment plus closing costs. Compare this line between lenders."}
+  ]
+},
+{
+  id:"btcard", track:"Money", title:"Balance transfer card offer",
+  org:"Summit Rewards Visa® — Pricing & Terms (Schumer box)", setting:"You have $6,000 on a card at 27%. This offer arrives: '0% for 18 months!'",
+  lines:[
+    {t:"Intro APR for balance transfers: 0% for 18 months from account opening on transfers made within 60 days.", ok:"A genuine 0% offer. Just make the transfer within 60 days."},
+    {t:"Balance transfer fee: 5% of each transfer ($5 minimum).",
+      trap:{amt:300, name:"The 0% isn't free", why:"The fee is charged upfront and added to your balance. It's still often worth it versus 27%, but it's a real cost, and some cards charge 3%.", cost:"$300 on a $6,000 transfer.",
+      script:"(No one to call here: compare offers.) Is there a card with a 3% transfer fee, or a credit union card with no fee? That's $120–$300 back in your pocket."}},
+    {t:"APR after intro period: 27.24% variable.",
+      trap:{amt:490, name:"What's left after 18 months goes back to 27%", why:"$6,300 (with the fee) ÷ 18 = $350/month to clear it. Paying $250/month leaves $1,800 at 27.24%.", cost:"$1,800 left over at 27.24% costs about $490–$560 in interest if it sits there for a year.",
+      script:"(A plan, not a call.) Divide your transferred balance by 18 and set autopay to at least that amount on day one."}},
+    {t:"Penalty APR: up to 29.99% if you make a late payment. May apply indefinitely to new transactions.",
+      trap:{amt:0, name:"One late payment can raise your rate", why:"Paying late can trigger a much higher penalty rate on new transactions, and some cards end the promo rate for the existing balance if you're 60 days late. Autopay on the minimum prevents this.", cost:"A higher rate on new purchases, possibly for good.",
+      script:"Set autopay for at least the minimum the day the card arrives."}},
+    {t:"Annual fee: None.", ok:"Good."},
+    {t:"Late payment fee: up to $40.", ok:"Typical for card agreements. Avoid it with autopay."}
+  ]
+},
+{
+  id:"shortterm", track:"Health", title:"Cheap health plan offer",
+  org:"FlexGuard Short-Term Medical — Plan Summary", setting:"You just started freelancing. An ad offers health coverage for $119/month, about a third of what the marketplace quoted you.",
+  lines:[
+    {t:"Monthly premium: $119.  Deductible: $5,000.", ok:"Clear numbers. Low premium, high deductible: a normal trade-off."},
+    {t:"Pre-existing conditions: Not covered. Any condition for which you received advice, diagnosis or treatment in the 5 years before coverage starts is excluded.",
+      trap:{amt:0, name:"Pre-existing conditions excluded", why:"Short-term plans aren't ACA-compliant, so they can refuse to pay for anything related to your past health: asthma, a past back injury, anxiety treatment. Plans on the ACA marketplace can't do this.", cost:"Any claim tied to your health history could be denied in full.",
+      script:"Is this an ACA-compliant plan? If not, I'll compare it with marketplace plans. I may qualify for a subsidy that brings the price down."}},
+    {t:"Maximum benefit: $250,000 per coverage period.",
+      trap:{amt:0, name:"Coverage cap", why:"ACA plans have no lifetime or annual dollar caps on essential benefits. A cancer diagnosis or serious accident can blow past $250,000, and you pay the rest.", cost:"Everything above $250,000.",
+      script:"What happens if my claims exceed $250,000? (Write down the answer, then compare with a plan that has an out-of-pocket maximum instead.)"}},
+    {t:"Not covered: maternity, mental health treatment, prescription drugs, preventive care.",
+      trap:{amt:0, name:"Major benefits excluded", why:"These are 'essential health benefits' that ACA plans must cover. Here you'd pay full price for every prescription.", cost:"Full retail price for every prescription, therapy session or prenatal visit.",
+      script:"Which of the ten essential health benefits does this plan cover? I need prescriptions covered."}},
+    {t:"Network: any licensed provider; discounts apply at participating providers.", ok:"Flexible choice of doctors. A genuine plus."},
+    {t:"Enrollment: coverage can begin as soon as the next day.", ok:"True of many short-term plans, and a reason people buy them between jobs."}
+  ]
+},
+{
+  id:"severance", track:"Work", title:"Severance agreement",
+  org:"Separation Agreement and General Release", setting:"You're 52 and your job was eliminated. HR hands you this and asks for a signature by Friday, in five days.",
+  lines:[
+    {t:"1. Severance: $8,000 (four weeks' pay), paid in a lump sum after the Effective Date.", ok:"The core offer. Often negotiable, but nothing hidden."},
+    {t:"2. You release the Company from all claims arising up to the date you sign, including claims under the Age Discrimination in Employment Act.", ok:"A release is the point of a severance agreement. You're trading claims for money; that's why the review time in line 3 matters."},
+    {t:"3. You must sign and return this Agreement within five (5) days. This Agreement is effective immediately upon signature.",
+      trap:{amt:0, name:"Too little time for someone 40+", why:"To release age-discrimination claims from a worker 40 or older, federal law (the Older Workers Benefit Protection Act) requires at least 21 days to consider (45 in a group layoff) and 7 days to revoke after signing. A 5-day deadline doesn't meet that.", cost:"Your ability to review the deal, get advice or negotiate.",
+      script:"Since I'm over 40 and this releases age claims, I understand I'm entitled to 21 days to consider it and 7 days to revoke after signing. Please send a corrected version, and I'll respond within that period."}},
+    {t:"4. You agree not to make any negative statements about the Company, its officers or its products.",
+      trap:{amt:0, name:"One-sided non-disparagement", why:"You can't criticize them, but nothing stops them from criticizing you, including to future employers. Ask for it to go both ways, or at least for a neutral reference.", cost:"Your reputation in reference checks.",
+      script:"Can we make this mutual, and add that the company will confirm only my dates of employment and title to reference checks?"}},
+    {t:"5. If you breach any term of this Agreement, you must repay the full severance plus the Company's attorneys' fees.",
+      trap:{amt:8000, name:"Full clawback over any breach", why:"'Any term' could mean a minor slip. Combined with the broad non-disparagement clause, a single critical post could cost the entire $8,000 plus their legal bills. (A clawback like this can't be used to punish you for challenging the age-discrimination waiver itself.)", cost:"$8,000 plus legal fees.",
+      script:"Please limit repayment to a material breach found by a court, and remove the attorneys' fees provision or make it apply to whichever side loses."}},
+    {t:"6. Nothing in this Agreement prevents you from filing a charge with the EEOC or other government agency.", ok:"Standard carve-out: the right to file an EEOC charge can't be signed away anyway. Good to see it stated."},
+    {t:"7. Your health coverage ends on the last day of the month; you may elect COBRA continuation.", ok:"Standard. Ask whether they'll pay COBRA premiums for a few months; that's a common negotiation."}
+  ]
+},
+{
+  id:"hotel", track:"Everyday", title:"Hotel booking confirmation",
+  org:"Harborview Resort — Reservation Confirmation", setting:"You booked 3 nights at a price that showed $139/night on a travel site. Here's your confirmation email.",
+  lines:[
+    {t:"Room rate: $139.00/night × 3 nights = $417.00", ok:"Matches what you saw.", cls:"table"},
+    {t:"Daily resort fee: $45.00/night × 3 = $135.00 (includes Wi-Fi, pool access, fitness center)", cls:"table",
+      trap:{amt:135, name:"Mandatory resort fee", why:"If you can't decline it, it's part of the room price. Since May 2025, a federal FTC rule requires hotels and booking sites to show the total price, mandatory fees included, upfront. If it wasn't shown, you have grounds to complain.", cost:"$135, a 32% bump over the advertised rate.",
+      script:"The price I was shown didn't include the resort fee. Under the FTC's fee rule the total price should have been displayed upfront. Please remove the fee or honor the price I booked."}},
+    {t:"Taxes: $83.40", ok:"Taxes can legally be shown separately.", cls:"table"},
+    {t:"Parking: self-parking not available; valet $42/night, charged at checkout.", cls:"table",
+      trap:{amt:126, name:"Parking that isn't really optional", why:"If you're driving, valet is effectively mandatory. Check for nearby public lots before you arrive.", cost:"$126 for three nights.",
+      script:"Is there any self-parking or a guest discount? If not, I'll look for a public garage nearby."}},
+    {t:"Cancellation: free until 72 hours before arrival; after that, one night's charge.", ok:"A normal, reasonable cancellation policy."},
+    {t:"Incidentals hold: $100/night will be authorized on your card at check-in and released after departure.",
+      ok:"Common. Use a credit card, not a debit card, so the hold doesn't tie up your cash."}
+  ]
+},
+{
+  id:"rto", track:"Money", title:"Rent-to-own TV agreement",
+  org:"RentRight Home — Lease Agreement with Purchase Option", setting:"Your TV died. A 65-inch TV is $699 at a big-box store, but you don't have $699. This store offers 'no credit needed.'",
+  lines:[
+    {t:"Item: 65\" 4K Smart TV, new.", ok:"The item."},
+    {t:"Weekly rental: $24.99. Ownership after 78 weekly payments.",
+      trap:{amt:1250, name:"Total cost nearly three times retail", why:"78 × $24.99 = $1,949.22 for a TV that costs $699 in stores. Rent-to-own works out to an extremely high cost of credit, even though it's called a 'lease.'", cost:"$1,250 more than buying it outright.",
+      script:"What's the total cost if I make every payment, and what's the 'cash price' you list? (Then compare: saving $25/week for 28 weeks buys it outright.)"}},
+    {t:"Liability Damage Waiver: $2.50/week (optional — included unless you decline).",
+      trap:{amt:195, name:"Optional add-on that's pre-included", why:"It's labelled optional but added unless you say no. Over 78 weeks it adds up.", cost:"$195 over 78 weeks.",
+      script:"Please remove the damage waiver. I'm declining it."}},
+    {t:"Early purchase option: you may buy at any time for 55% of the remaining payments.", ok:"Useful if you come into money. Always ask for this."},
+    {t:"You may return the item at any time and stop payments with no further obligation.", ok:"True of rent-to-own and a genuine advantage over a loan."},
+    {t:"Late fee: $5 if a payment is more than 3 days late.", ok:"Small, disclosed and capped. Fine."}
+  ]
+},
+{
+  id:"training", track:"Work", title:"Training repayment agreement",
+  org:"Training Repayment Agreement — Atlas Logistics", setting:"You got hired as a warehouse supervisor. On day one, alongside the tax forms, there's this.",
+  lines:[
+    {t:"1. Atlas will provide on-the-job training, valued at $6,000, including orientation, safety training and shadowing a supervisor.",
+      trap:{amt:0, name:"Ordinary training given a price tag", why:"Orientation and shadowing are normal parts of starting a job, not a portable credential. Putting a $6,000 value on them is a way to make leaving expensive. Regulators have criticized these 'stay-or-pay' agreements, and some states, including California since 2026, now ban most of them.", cost:"Your freedom to leave a bad job.",
+      script:"Which part of this training is a credential I could use elsewhere? I'm comfortable repaying for a certification, but not for orientation and on-the-job training."}},
+    {t:"2. If you leave for any reason within 24 months, you will repay the full $6,000.",
+      trap:{amt:6000, name:"Full repayment, not prorated", why:"Leaving at month 23 costs the same as month 2, and 'any reason' includes being fired or laid off.", cost:"$6,000.",
+      script:"Could we prorate the amount monthly, and exclude termination without cause?"}},
+    {t:"3. You authorize Atlas to deduct any amount owed from your final paycheck.",
+      trap:{amt:0, name:"Deduction from your final paycheck", why:"Many states limit deductions from wages, and for hourly workers federal law doesn't allow deductions that drop pay below minimum wage. Don't pre-authorize it.", cost:"Your last paycheck, possibly all of it.",
+      script:"I'd like to strike the paycheck deduction authorization. If anything were owed, we can handle it separately."}},
+    {t:"4. Starting pay: $22.50/hour, with a review at 90 days.", ok:"The offer."},
+    {t:"5. Atlas will reimburse up to $1,000 per year for approved college courses.", ok:"A real benefit, with no strings mentioned."}
+  ]
+},
+{
+  id:"movers", track:"Housing", title:"Interstate moving estimate",
+  org:"Coast2Coast Relocation — Estimate & Order for Service", setting:"You're moving from Ohio to Arizona. A company you found online sent this after a video walkthrough.",
+  lines:[
+    {t:"Estimate type: NON-BINDING. Estimated weight 7,000 lbs. Estimated charges: $3,800.", ok:"Legit format. A non-binding estimate can change with actual weight, but federal rules limit what you pay at delivery (see below)."},
+    {t:"Deposit: 50% ($1,900) due by wire transfer to confirm your move date.",
+      trap:{amt:1900, name:"Large upfront deposit by wire", why:"Reputable movers rarely need a big deposit, and wire transfers are nearly impossible to recover. A large deposit demand is a common warning sign of a moving scam.", cost:"$1,900 you may never see again.",
+      script:"I'll pay on delivery, or a small deposit by credit card. Can you give me your USDOT number so I can check your registration?"}},
+    {t:"Valuation: ☑ Released Value — 60 cents per pound per article (no charge).",
+      trap:{amt:900, name:"Pre-checked minimum coverage", why:"Released value is the free option, and it pays almost nothing: a 50-lb TV is covered for $30. Full Value Protection, which pays to repair or replace, is the legal default; you have to sign to waive it, so a pre-checked box isn't proper.", cost:"A broken $930 TV pays out $30, so you lose $900.",
+      script:"What would Full Value Protection cost for my shipment? I'd like to see both options before I sign."}},
+    {t:"At delivery, Carrier may hold the shipment until all charges, including charges exceeding the estimate, are paid in full.",
+      trap:{amt:1120, name:"Hostage-load clause", why:"For interstate moves on a non-binding estimate, federal rules say you can get your goods by paying 110% of the estimate at delivery. Anything above that is billed later, giving you time to check the weight.", cost:"Holding your belongings for, say, $5,300 instead of $4,180.",
+      script:"Federal rules cap what I owe at delivery at 110% of a non-binding estimate. Please change this clause to match."}},
+    {t:"You have the right to observe the weighing and to request a reweigh.", ok:"A real federal right. Use it if the weight looks high."},
+    {t:"You will receive the federal booklet 'Your Rights and Responsibilities When You Move.'", ok:"Required by law. A good sign."}
+  ]
+},
+{
+  id:"tax", track:"Money", title:"Tax prep checkout",
+  org:"TaxEasy Online — Review Your Order", setting:"The ad said 'File for $0.' You've just finished entering everything and reached checkout.",
+  lines:[
+    {t:"Federal return: $0.00", ok:"As advertised.", cls:"table"},
+    {t:"State return: $59.00", cls:"table",
+      trap:{amt:59, name:"'Free' doesn't include the state return", why:"'Free' often covers only the federal return. Some states offer free e-filing directly, and IRS Free File partners prepare federal returns free for eligible filers (AGI $89,000 or less); some also do the state return free.", cost:"$59.",
+      script:"(Check before you pay.) Look up your state's free e-file option, or IRS Free File, which you may qualify for based on income."}},
+    {t:"Pay with your refund — Refund Transfer service: $39.95", cls:"table",
+      trap:{amt:39.95, name:"Paying a fee to pay the fee", why:"This lets the company take its fees out of your refund, but it costs $39.95 extra and can delay your refund. Paying the $59 with a card avoids it.", cost:"$39.95.",
+      script:"I'll pay the prep fee by card, not from my refund."}},
+    {t:"☑ Audit Defense Plus: $49.99", cls:"table",
+      trap:{amt:49.99, name:"Pre-checked add-on", why:"Few returns are audited, and most notices are fixed with a letter. A pre-checked box relies on you not noticing.", cost:"$49.99.",
+      script:"Uncheck it."}},
+    {t:"Refund method: direct deposit to account ending 4471", ok:"The fastest, safest way to get your refund."},
+    {t:"Estimated federal refund: $1,284", ok:"Your money. Nothing to pay for here."}
+  ]
+},
+{
+  id:"contractor", track:"Housing", title:"Kitchen remodel contract",
+  org:"Precision Home Builders — Home Improvement Contract", setting:"Three quotes in. You liked this contractor; the price was $38,000. Here's the contract.",
+  lines:[
+    {t:"1. Scope: remove and replace cabinets, countertops, sink, backsplash and flooring per attached drawings.", ok:"A written scope with drawings is exactly what you want."},
+    {t:"2. Payment: 50% deposit ($19,000) due at signing; balance due at completion.",
+      trap:{amt:19000, name:"Huge upfront deposit", why:"Half up front leaves you exposed if the contractor stalls or disappears. Some states cap deposits; California, for example, generally limits it to $1,000 or 10%, whichever is less. Payments should follow completed milestones.", cost:"$19,000 at risk before any work happens.",
+      script:"Could we do a small deposit at signing (no more than $1,000 in California) and the rest in milestone payments: demolition done, cabinets installed, counters installed, final walkthrough?"}},
+    {t:"3. Changes to the work may be agreed verbally between Owner and Contractor.",
+      trap:{amt:3000, name:"Verbal change orders", why:"Every 'while we're at it' becomes a surprise on the final invoice with no record of what you agreed to.", cost:"Unbudgeted extras. Remodels commonly run 10–20% over.",
+      script:"All changes in writing, with the price, signed by both of us before the work is done."}},
+    {t:"4. Contractor is responsible for paying all subcontractors and suppliers.",
+      trap:{amt:6000, name:"No lien waivers", why:"If the contractor doesn't pay the plumber or the cabinet supplier, they can put a lien on your house, even though you paid the contractor. Ask for lien waivers with each payment.", cost:"You could pay twice for the same cabinets.",
+      script:"With each payment, please provide signed lien waivers from you and any subcontractor or supplier paid with it."}},
+    {t:"5. Contractor will obtain all required permits; permit fees are included in the price.", ok:"Good: unpermitted work causes problems when you sell."},
+    {t:"6. License #HIC-0573, insured. Certificate of insurance attached.", ok:"Verify the license with your state, but this is what you want to see."},
+    {t:"7. Workmanship warranty: 1 year from completion.", ok:"Typical."}
+  ]
+},
+{
+  id:"tickets", track:"Everyday", title:"Concert ticket checkout",
+  org:"TixHub — Order Summary", setting:"You clicked on 2 tickets listed at $89 each. Here's the final screen.",
+  lines:[
+    {t:"2 × General Admission @ $89.00 = $178.00", ok:"The listed price.", cls:"table"},
+    {t:"Service fee: $24.50 × 2 · Facility charge: $6.00 × 2 · Order processing: $8.95", cls:"table",
+      trap:{amt:70, name:"Fees revealed at the last step", why:"Since May 2025, the FTC's fee rule requires ticket sellers to show the total price, mandatory fees included, from the first price you see. This is the 'drip pricing' the rule bans.", cost:"$69.95, a 39% increase.",
+      script:"(Before paying.) Go back and compare the all-in price on the venue's own box office. If the total wasn't shown upfront, you can report it to the FTC at ReportFraud.ftc.gov."}},
+    {t:"☑ Ticket Protection: $18.40 — refund if you can't attend for covered reasons.", cls:"table",
+      trap:{amt:18.40, name:"Pre-checked insurance", why:"Covered reasons are usually narrow (documented illness, for example), and the event being cancelled is already refundable anyway.", cost:"$18.40.",
+      script:"Uncheck it unless you've read which reasons are covered."}},
+    {t:"Delivery: mobile tickets, free.", ok:"Fine."},
+    {t:"All sales final. Refunds only if the event is cancelled.", ok:"Standard for tickets. Know it before you buy."}
+  ]
+},
+{
+  id:"carlease", track:"Money", title:"Car lease worksheet",
+  org:"Lease Worksheet — 36 Months, 10,000 miles/year", setting:"You want a lower payment than buying, so the dealer offered a lease.",
+  lines:[
+    {t:"MSRP $36,000 · Agreed value (capitalized cost) $35,500", ok:"You negotiated $500 off; good. The cap cost is negotiable, just like a purchase price.", cls:"table"},
+    {t:"Acquisition fee: $695", ok:"A standard bank fee on most leases.", cls:"table"},
+    {t:"Money factor: 0.00290", cls:"table",
+      trap:{amt:1650, name:"Hidden interest rate", why:"Multiply the money factor by 2,400 to get the rough APR: 0.00290 = 6.96%. Dealers can mark it up above the bank's 'buy rate.' If the bank's rate is 0.00210 (5.04%), you're paying extra interest.", cost:"Roughly $1,650 over 36 months on this lease.",
+      script:"What's the buy rate money factor from the bank? I'd like the lease at the buy rate. My credit union quoted me 5%."}},
+    {t:"Mileage: 10,000 miles/year. Excess mileage: $0.25/mile.", cls:"table",
+      trap:{amt:2250, name:"Low mileage cap", why:"The average driver covers about 13,000+ miles a year. Going over is charged at turn-in.", cost:"Driving 13,000/year: 9,000 extra miles × $0.25 = $2,250 at the end.",
+      script:"I drive about 13,000 miles a year. What's the payment with 12,000 or 15,000 miles built in? Buying miles upfront is cheaper than paying for them at the end."}},
+    {t:"Disposition fee at lease end: $395 (waived if you lease or buy another vehicle from us).",
+      trap:{amt:395, name:"Turn-in fee", why:"A charge just for returning the car, designed to keep you coming back. Sometimes negotiable now, rarely later.", cost:"$395.",
+      script:"Can you waive the disposition fee in the contract now?"}},
+    {t:"Purchase option at lease end: $21,240", ok:"Lets you buy the car later. Fine to have."}
+  ]
+},
+{
+  id:"aidletter", track:"Money", title:"College financial aid letter",
+  org:"Westbrook University — Your 2027–28 Financial Aid Award", setting:"Your teen got into their top choice. The aid letter says 'Congratulations!' at the top.",
+  lines:[
+    {t:"Estimated cost of attendance: $58,000 (tuition, housing, meals, books, travel).", ok:"The full-year sticker price. Tuition alone may be lower; ask for a breakdown."},
+    {t:"Westbrook Merit Scholarship: $20,000 (renewable with a 3.3 GPA).",
+      trap:{amt:60000, name:"Scholarship with a high renewal bar", why:"It's free money, but only while your student keeps a 3.3. Many students' GPAs drop in the first year. Lose it, and the next three years cost $20,000 more each.", cost:"Up to $60,000 over the remaining three years.",
+      script:"What share of students keep this scholarship after freshman year? Is there an appeal process or a grace semester if GPA dips?"}},
+    {t:"Federal Direct Loans (subsidized + unsubsidized): $5,500", ok:"Federal student loans are the safest borrowing, with fixed rates and income-driven repayment. Fine to accept if needed."},
+    {t:"Federal Work-Study: $2,500",
+      trap:{amt:2500, name:"Work-study isn't a discount", why:"Work-study is a chance to earn up to that amount by working a campus job during the year. It doesn't reduce the bill you pay in August.", cost:"$2,500 you still need to pay upfront.",
+      script:"How many hours a week would that require, and are jobs guaranteed?"}},
+    {t:"Parent PLUS Loan: $20,000",
+      trap:{amt:20000, name:"A parent loan listed as 'aid'", why:"This is a loan in the parent's name, with a higher rate and fees, and it's often listed alongside grants as if it reduces the cost. It's simply borrowing.", cost:"$20,000 of parent debt each year, up to the $65,000 federal limit per student.",
+      script:"Can you show me the net price after grants and scholarships only? I'd also like to appeal for more need-based aid; here's our updated financial situation."}},
+    {t:"Your remaining cost: $10,000", ok:"The math is right, but notice it counts loans and work-study as if they reduce the price. Only $20,000 of the $58,000 is gift aid you never repay."}
+  ]
+},
+{
+  id:"solar", track:"Housing", title:"Solar panel lease",
+  org:"BrightRoof Solar — 20-Year Residential Lease Summary", setting:"A door-to-door rep says you'll 'save money from day one with $0 down.'",
+  lines:[
+    {t:"System: 7.2 kW, installed, owned and maintained by BrightRoof.", ok:"In a lease, the company owns the panels, so they handle maintenance. That's a real perk."},
+    {t:"Monthly payment: $129, increasing 2.9% each year for 20 years.",
+      trap:{amt:41175, name:"Escalator clause", why:"The payment rises every year. By year 20 it's $222/month. Whether you save depends on your utility rates rising faster than 2.9%. Many don't every year.", cost:"Total payments: about $41,175 over 20 years.",
+      script:"What's the total I'll pay over 20 years? Can I get a fixed payment with no escalator? I'd also like a cash price to compare buying the system."}},
+    {t:"Estimated savings assume your utility rates increase 5% per year.",
+      trap:{amt:0, name:"Rosy savings assumption", why:"The savings projection depends on electricity prices rising 5% every year for 20 years. If they rise less, your 'savings' can turn into losses.", cost:"Projected savings may not happen.",
+      script:"Please show me the savings at 2% and 3% annual utility increases, using my last 12 months of bills."}},
+    {t:"If you sell your home, the buyer must assume this lease or you must pay the remaining balance.",
+      trap:{amt:15000, name:"Complicates selling your house", why:"Buyers may not qualify for or want the lease. If they won't take it, you may need to buy out the remaining payments.", cost:"A buyout can run $15,000+ in the early years.",
+      script:"What's the buyout amount at year 5 and year 10? Please put the formula in writing."}},
+    {t:"Production guarantee: if the system produces less than 90% of the estimate, BrightRoof refunds the difference.", ok:"A genuine protection. Good."},
+    {t:"You may cancel within 3 business days of signing.", ok:"The federal three-day cooling-off rule for door-to-door sales. Use it if you feel rushed."}
+  ]
+},
+{
+  id:"debt", track:"Money", title:"Debt settlement enrollment",
+  org:"FreedomPath Debt Solutions — Program Agreement", setting:"You owe $30,000 on credit cards. A radio ad promised to 'cut your debt in half.' You called; they emailed this.",
+  lines:[
+    {t:"Enrolled debt: $30,000 across 4 credit cards.", ok:"Your debts."},
+    {t:"Program fee: 25% of enrolled debt ($7,500), plus a $49 monthly account fee.",
+      trap:{amt:7500, name:"Fees on the full debt", why:"25% of what you owe, not of what they save you. If they settle for 50%, you've saved $15,000 but paid $7,500 of it to them.", cost:"$7,500 in fees, plus $49/month (≈$2,000 over a 3½-year program).",
+      script:"Before enrolling, call a nonprofit credit counselor (look for NFCC members). A debt management plan can cut your interest rates without the fees."}},
+    {t:"Your first two monthly fees to FreedomPath are collected in month 1, before any debt is settled.",
+      trap:{amt:98, name:"Fees before any debt is settled", why:"For debt relief sold by phone, an FTC rule bans the company from collecting its fees until at least one debt is actually settled and you've made a payment under that settlement. Charging upfront is a red flag.", cost:"$98 upfront, and a sign of how they'll operate.",
+      script:"Federal rules say you can't charge fees until you've settled at least one of my debts. I won't pay anything until then."}},
+    {t:"You will stop making payments to creditors while we accumulate settlement funds.",
+      trap:{amt:0, name:"Stop paying your creditors", why:"While you stop paying, late fees and interest pile up, your credit score drops, and creditors can sue. Some won't settle at all.", cost:"Late fees, collections, possible lawsuits and lost credit standing.",
+      script:"What happens if a creditor sues me during the program? Do you provide legal representation?"}},
+    {t:"Forgiven amounts may be reported to the IRS.", ok:"True and honest: forgiven debt can count as taxable income (unless you're insolvent). Good that it's disclosed."},
+    {t:"Funds in your dedicated account are yours and can be withdrawn at any time.", ok:"Required by the same FTC rule. A good sign."}
+  ]
+},
+{
+  id:"bank", track:"Money", title:"Checking account fee schedule",
+  org:"Lakeshore Bank — Everyday Checking Fee Schedule", setting:"You're opening your first checking account. The banker hands you a fee schedule.",
+  lines:[
+    {t:"Monthly maintenance fee: $12, waived with $500 in monthly direct deposits.", ok:"Common and avoidable with a paycheck. Fine."},
+    {t:"Overdraft fee: $35 per item, up to 4 items per day.",
+      trap:{amt:140, name:"Per-item overdraft fees", why:"Overdraw by $5 and then four small checks or automatic payments go through: that's four fees. Many banks now offer no-overdraft accounts or decline transactions instead.", cost:"Up to $140 in a single day.",
+      script:"Please don't opt me in to overdraft coverage for debit card and ATM transactions; I'd rather they be declined. (Federal rules require my opt-in for those fees.)"}},
+    {t:"Extended overdraft fee: $7 per day after the account is overdrawn 5 consecutive days.",
+      trap:{amt:63, name:"Daily fees while overdrawn", why:"After the first $35, the bank keeps charging every day you're negative.", cost:"Two weeks overdrawn: 9 days × $7 = $63 more.",
+      script:"Do you have an account with no overdraft fees? Many banks and credit unions now do."}},
+    {t:"Transactions are posted in order from largest to smallest at the end of each business day.",
+      trap:{amt:70, name:"Largest-first posting", why:"Posting the biggest charge first drains your balance faster, so more small purchases overdraw. That means more fees.", cost:"Often 1–2 extra overdraft fees: $35–$70.",
+      script:"In what order do you post transactions? I'd like an account that posts in the order transactions happen."}},
+    {t:"In-network ATMs: free. Out-of-network: $2.50 per withdrawal.", ok:"Normal. Use in-network ATMs."},
+    {t:"Paper statements: $2/month. E-statements: free.", ok:"Small, avoidable. Fine."}
+  ]
+},
+{
+  id:"funeral", track:"Everyday", title:"Funeral home package",
+  org:"Hollins Funeral Home — Traditional Service Package", setting:"A parent has died. You're at the funeral home the next morning. The director suggests a package.",
+  lines:[
+    {t:"Package price: $9,800, includes basic services fee, embalming, viewing, service and Protective Sealer casket.", ok:"Packages are allowed. You can also choose items individually from the General Price List, which they must give you."},
+    {t:"Embalming is required by law for all services.",
+      trap:{amt:900, name:"\"Embalming is required by law\"", why:"The FTC Funeral Rule says no state requires routine embalming for every death. A funeral home can require it for a public viewing as its own policy, but can't say the law demands it.", cost:"Embalming often costs $700–$1,000.",
+      script:"Is embalming required by law here, or is it your policy for public viewing? We may choose a private family viewing or a direct cremation instead."}},
+    {t:"The Protective Sealer casket preserves the body indefinitely.",
+      trap:{amt:2000, name:"False 'preservation' claim", why:"The FTC rule bars claims that a casket or vault preserves remains. Sealer gaskets add cost, not protection.", cost:"Sealer caskets often cost thousands more than basic models.",
+      script:"Please show me the casket price list before any caskets, including the least expensive options."}},
+    {t:"Caskets purchased elsewhere: $395 handling fee.",
+      trap:{amt:395, name:"Fee for using your own casket", why:"Under the FTC Funeral Rule, a funeral home must accept a casket or urn you buy elsewhere, and can't charge a handling fee for it.", cost:"$395, and the markup on their casket.",
+      script:"The FTC Funeral Rule doesn't allow a fee for a casket we provide. Please remove it."}},
+    {t:"You will receive an itemized statement of the goods and services you select before payment.", ok:"Required by the Funeral Rule. Good."},
+    {t:"Cemetery may require an outer burial container; prices on the Outer Burial Container Price List.", ok:"True: some cemeteries require a liner or vault (it's cemetery policy, not law). They're giving you the price list. Good."}
+  ]
+},
+{
+  id:"timeshare", track:"Everyday", title:"Timeshare purchase",
+  org:"Paradise Shores Vacation Club — Purchase Agreement", setting:"You went to a 90-minute presentation for a free resort stay. Three hours later, a manager slides this over.",
+  lines:[
+    {t:"Purchase price: $24,900 for 1 week per year, two-bedroom unit.", ok:"The price. Know that resale value is usually a small fraction of this."},
+    {t:"Financing: $22,410 at 14.9% APR over 10 years.", ok:"Disclosed, but expensive. A home equity loan or savings would cost far less. (The deeper problem is the purchase itself.)"},
+    {t:"Annual maintenance fees: $1,180, subject to increase each year at the Association's discretion.",
+      trap:{amt:14842, name:"Uncapped, rising annual fees", why:"Maintenance fees typically rise every year and you pay them whether or not you travel. No cap means no limit.", cost:"At 5% annual increases: $14,842 over the first 10 years, and $1,831/year by year 10.",
+      script:"What have maintenance fees been for the last 10 years? Is there any cap on increases? I'd like that in writing before I decide."}},
+    {t:"Ownership is deeded in perpetuity and passes to your heirs.",
+      trap:{amt:0, name:"No end date", why:"'In perpetuity' sounds like a gift, but it means the fees never end, even if you can't use it. Your heirs may have to formally refuse it to avoid the fees.", cost:"Fees for life, potentially passed to your kids.",
+      script:"Is there an exit program? Under what conditions will the resort take the unit back?"}},
+    {t:"This Agreement is the entire agreement. No verbal statements by sales representatives are part of this contract.",
+      trap:{amt:0, name:"The sales pitch doesn't count", why:"Promises like 'you can easily rent it out' or 'we'll buy it back' vanish when you sign this. If it isn't written in the contract, it doesn't exist.", cost:"Every promise made during the 3-hour pitch.",
+      script:"Please write the rental and buy-back statements your rep made into the contract. If you can't, I'm not signing today."}},
+    {t:"You may cancel this purchase in writing within the period provided by state law (see Notice of Right to Cancel).", ok:"States give timeshare buyers a cancellation window (often 3–10 days). Find the exact deadline and use it if you have doubts."}
+  ]
+},
+{
+  id:"warranty", track:"Housing", title:"Home warranty contract",
+  org:"ShieldPlus Home Warranty — Gold Plan", setting:"Your new home came with a sales pitch: 'Never pay for a big repair again!' for $599/year.",
+  lines:[
+    {t:"Annual price: $599. Covers HVAC, plumbing, electrical, water heater and major appliances.", ok:"The plan."},
+    {t:"Service fee: $125 per service request.", ok:"Normal for home warranties. Factor it in: three calls a year = $375 on top of the price."},
+    {t:"Coverage limits: HVAC $1,500 per contract year; appliances $500 per item.",
+      trap:{amt:5500, name:"Low coverage caps", why:"A new HVAC system often costs $7,000+. The 'big repair' protection pays $1,500 of it.", cost:"A $7,000 HVAC replacement leaves you paying $5,500.",
+      script:"What's the maximum the plan pays to replace an HVAC system? I'm comparing this with setting aside $50/month in savings."}},
+    {t:"Not covered: pre-existing conditions, failures due to improper maintenance, and code upgrades or permits.",
+      trap:{amt:0, name:"Broad exclusions", why:"'Improper maintenance' and 'pre-existing' are common grounds to deny claims, especially in the first year. Code upgrades, needed for many replacements, are on you.", cost:"Claims can be denied entirely.",
+      script:"What documentation do you need to prove maintenance? I'd like that list now so I can keep records."}},
+    {t:"Contractor will be assigned by ShieldPlus. Repair or replacement decisions are at ShieldPlus's sole discretion.",
+      trap:{amt:0, name:"They pick the contractor and the fix", why:"You can't pick your trusted plumber, and they decide whether to patch or replace, often choosing the cheaper option repeatedly.", cost:"Your choice and repair quality.",
+      script:"Can I use my own licensed contractor and be reimbursed?"}},
+    {t:"Cancel anytime within 30 days for a full refund; afterward, prorated refund minus a $50 fee.", ok:"Reasonable cancellation terms."}
+  ]
+},
+{
+  id:"personalloan", track:"Money", title:"Personal loan offer",
+  org:"Lendwell — Loan Agreement & Disclosure", setting:"You're consolidating $10,000 of credit card debt with a personal loan.",
+  lines:[
+    {t:"Loan amount: $10,000 · Interest rate: 15.99% · Term: 36 months", ok:"The headline terms.", cls:"table"},
+    {t:"Origination fee: 8% ($800), deducted from loan proceeds. Amount sent to you: $9,200.", cls:"table",
+      trap:{amt:800, name:"Fee taken out of your loan", why:"You borrow and repay $10,000 but receive $9,200, which isn't enough to pay off your $10,000 of cards. Your true cost (the APR) is about 22%, not 15.99%.", cost:"$800, and a 22% APR instead of 15.99%.",
+      script:"What's the APR, not the interest rate? Do you have an option with no origination fee? I'm comparing with a credit union loan."}},
+    {t:"Monthly payment: $351.52", ok:"Correct for $10,000 at 15.99% over 36 months.", cls:"table"},
+    {t:"☑ Credit Life & Disability Protection: $11.00/month (optional)", cls:"table",
+      trap:{amt:396, name:"Optional insurance, already checked", why:"Credit insurance is usually optional, and this form says so. It's also expensive for what it covers. Regular term life insurance is usually far cheaper.", cost:"$396 over the loan.",
+      script:"Please remove the credit insurance. I'm declining it."}},
+    {t:"Autopay discount: rate reduced 0.25% with automatic payments.", ok:"A small but real discount. Fine."},
+    {t:"No prepayment penalty.", ok:"Good: you can pay it off early and save interest."}
+  ]
+}
+];
+CASES.push(...CASES2);
+
+// ---------- state ----------
+const store = {
+  get(k,d){try{const v=localStorage.getItem("dottedline:"+k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem("dottedline:"+k,JSON.stringify(v))}catch(e){}}
+};
+let S = {view:"home", caseIdx:null, flags:new Set(), submitted:false,
+  results: store.get("results",{}), pro: store.get("pro",false)};
+
+const dayIndex = () => Math.max(0, Math.floor((new Date().setHours(0,0,0,0) - LAUNCH) / 864e5));
+const todayIdx = () => dayIndex() % CASES.length;
+const cycle = () => Math.floor(dayIndex() / CASES.length);
+const hardMode = i => i===todayIdx() && cycle()>0;
+const rkey = i => hardMode(i) ? CASES[i].id+'@'+cycle() : CASES[i].id;
+const trapCount = c => c.lines.filter(l=>l.trap).length;
+const caseNo = i => (i===todayIdx()? dayIndex() : i) + 1;
+
+function totals(){
+  let caught=0, total=0, played=0, saved=0;
+  for(const id in S.results){const r=S.results[id];played++;caught+=r.caught;total+=r.total;saved+=r.saved||0}
+  return {caught,total,played,saved};
+}
+function streak(){
+  const d=store.get("days",[]); let s=0; let t=new Date(); t.setHours(0,0,0,0);
+  const has = x => d.includes(x.toISOString().slice(0,10));
+  if(!has(t)) t.setDate(t.getDate()-1);
+  while(has(t)){s++; t.setDate(t.getDate()-1)}
+  return s;
+}
+function markDay(){const d=store.get("days",[]);const k=new Date();k.setHours(0,0,0,0);const s=k.toISOString().slice(0,10);if(!d.includes(s)){d.push(s);store.set("days",d)}}
+
+// ---------- render ----------
+const $app = document.getElementById("app");
+const esc = s => s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function header(){
+  return `<header><button class="logo" data-go="home"><span class="mark">⚑</span>${APP_NAME}</button>
+  <button class="pill ${S.pro?"pro":""}" data-act="pro">${S.pro?"Pro preview on":"Go Pro · $3/mo"}</button></header>`;
+}
+
+function home(){
+  const t=todayIdx(), c=CASES[t], r=S.results[rkey(t)], tot=totals();
+  const tracks=["All",...new Set(CASES.map(x=>x.track))];
+  const archive = CASES.map((x,i)=>{
+    if(i===t) return "";
+    if(S.track && S.track!=="All" && x.track!==S.track) return "";
+    const done=S.results[x.id], locked=!S.pro;
+    return `<button class="case" data-open="${i}" ${locked?'data-locked="1"':""}>
+      <div><b>${x.title}</b><br><small>${x.track}</small></div>
+      <span class="tag ${done?"done":locked?"lock":""}">${done?`${done.caught}/${done.total} caught`:locked?"🔒 Pro":"Play"}</span></button>`;
+  }).join("");
+  $app.innerHTML = header()+`
+  <div class="stats">
+    <div class="stat"><b>${streak()}🔥</b><span>day streak</span></div>
+    <div class="stat"><b>${tot.caught}</b><span>traps caught</span></div>
+    <div class="stat"><b>$${tot.saved.toLocaleString()}</b><span>you'd have kept</span></div>
+  </div>
+  <div class="hero">
+    <div class="eyebrow">Today's case · ${c.track}</div>
+    <h1>${c.title}</h1>
+    <p class="muted">${c.setting}</p>
+    ${hardMode(t)?`<p><b>Expert round:</b> you've seen this one before, but the trap count is hidden this time, just like a real contract. Flag what you'd push back on.</p>`:`<p>Somewhere in this document are <b>${trapCount(c)} traps</b>. Tap the clauses you'd push back on, then check your answers. Each trap comes with what it would cost you and exactly what to say.</p>`}
+    <div class="row"><button class="btn accent" data-open="${t}">${r?"Review today's case":"Read the fine print →"}</button>
+    ${r?`<span class="muted">You caught ${r.caught}/${r.total}. New case tomorrow.</span>`:""}</div>
+  </div>
+  <h2>Practice by track <span class="muted" style="font-weight:400;font-size:13px">· ${CASES.length} cases</span></h2>
+  <div class="row" style="margin-bottom:10px">${tracks.map(k=>`<button class="pill ${ (S.track||"All")===k?"pro":""}" data-track="${k}">${k}</button>`).join("")}</div>
+  <div class="list">${archive}</div>
+  ${FEEDBACK_URL?`<div class="hero" style="margin-top:18px"><b>Testing ${APP_NAME}?</b><p class="muted" style="margin:4px 0 10px">Your answers decide whether this becomes a real app. It takes a minute.</p><a class="btn accent" style="text-decoration:none;display:inline-block" href="${FEEDBACK_URL}" target="_blank" rel="noopener">Give feedback</a></div>`:""}
+  <div class="foot">${APP_NAME} is a prototype. The documents are fictional, and the explanations are general education, not legal or financial advice. Rules vary by state.</div>`;
+}
+
+function play(){
+  const c=CASES[S.caseIdx], n=c.lines.filter(l=>l.trap).length;
+  const lines = c.lines.map((l,i)=>{
+    let cls="clause "+(l.cls||"");
+    if(S.submitted){
+      const f=S.flags.has(i);
+      if(l.trap) cls+= f?" hit":" miss";
+      else if(f) cls+=" false";
+    } else if(S.flags.has(i)) cls+=" flagged";
+    return `<button class="${cls}" data-line="${i}" ${S.submitted?"disabled":""}><span class="n">${i+1}</span>${esc(l.t.replace(/^\d+\.\s*/,""))}</button>`;
+  }).join("");
+  $app.innerHTML = header()+`
+  <div class="docbar">
+    <div><div class="eyebrow">${c.track} · Case #${caseNo(S.caseIdx)}</div><b>${c.title}</b></div>
+    ${S.submitted?`<button class="btn alt" data-go="home">Done</button>`:
+      `<div class="row"><span class="muted" style="font-size:13px">${S.flags.size} flagged · ${hardMode(S.caseIdx)?"count hidden":n+" hidden"}</span><button class="btn" data-act="submit" ${S.flags.size?"":"disabled"}>Check answers</button></div>`}
+  </div>
+  <p class="muted" style="margin:0 0 12px">${c.setting}</p>
+  ${S.submitted?results():""}
+  <div class="paper"><h3>${esc(c.org)}</h3><div class="sub">Tap any clause to flag it</div>${lines}</div>`;
+}
+
+function results(){
+  const c=CASES[S.caseIdx];
+  const traps=c.lines.map((l,i)=>({...l,i})).filter(l=>l.trap);
+  const decoys=c.lines.map((l,i)=>({...l,i})).filter(l=>!l.trap && S.flags.has(l.i));
+  const caught=traps.filter(t=>S.flags.has(t.i)).length;
+  const sq=traps.map(t=>S.flags.has(t.i)?"🟩":"🟥").join("")+"⬜".repeat(decoys.length);
+  const msg = caught===traps.length && !decoys.length ? "Sharp eyes. Nothing got past you."
+    : caught===traps.length ? "You caught every trap. Watch the false alarms: flagging fair clauses costs you credibility when you negotiate."
+    : `You'd have signed with ${traps.length-caught} trap${traps.length-caught>1?"s":""} still in it.`;
+  return `<div class="score">
+    <div class="row" style="justify-content:space-between">
+      <div><div class="big">${caught}/${traps.length} traps caught</div>
+      <div class="muted">${decoys.length} false alarm${decoys.length===1?"":"s"}</div></div>
+      <div class="squares">${sq}</div>
+    </div>
+    <p>${msg}</p>
+    <div class="row"><button class="btn alt" data-act="share">Copy result</button>${FEEDBACK_URL?`<a class="btn accent" style="text-decoration:none" href="${FEEDBACK_URL}" target="_blank" rel="noopener">Tell us what you think (1 min)</a>`:""}</div>
+  </div>
+  <h2>The traps</h2>
+  ${traps.map(t=>`<div class="trap ${S.flags.has(t.i)?"":"missed"}">
+    <h4>${S.flags.has(t.i)?"✓":"✗"} Line ${t.i+1}: ${t.trap.name}</h4>
+    <div>${t.trap.why}</div>
+    <div class="cost">What it costs: ${t.trap.cost}</div>
+    <div class="script"><b>What to say</b>“${t.trap.script}”<button class="copy" data-copy="${esc(t.trap.script)}">Copy</button></div>
+  </div>`).join("")}
+  ${decoys.length?`<h2>Why these were fine</h2>`+decoys.map(d=>`<div class="decoy"><b>Line ${d.i+1}:</b> ${d.ok}</div>`).join(""):""}
+  ${!S.pro?`<div class="hero" style="margin-top:18px"><b>Want more practice?</b><p class="muted" style="margin:4px 0 10px">Pro unlocks every past case, skill tracks for housing, money, health and work, and a library of every negotiation script.</p><button class="btn" data-act="pro">See Pro</button></div>`:""}
+  <h2>The document</h2>`;
+}
+
+function render(){ S.view==="play"?play():home(); }
+
+// ---------- actions ----------
+function openCase(i){
+  const c=CASES[i]; const r=S.results[rkey(i)];
+  S.caseIdx=i; S.view="play";
+  if(r){S.flags=new Set(r.flags);S.submitted=true}else{S.flags=new Set();S.submitted=false}
+  render(); window.scrollTo(0,0);
+}
+function submit(){
+  const c=CASES[S.caseIdx];
+  const traps=c.lines.map((l,i)=>({l,i})).filter(x=>x.l.trap);
+  const hit=traps.filter(x=>S.flags.has(x.i));
+  const saved=hit.reduce((a,x)=>a+(x.l.trap.amt||0),0);
+  S.results[rkey(S.caseIdx)]={flags:[...S.flags],caught:hit.length,total:traps.length,false:S.flags.size-hit.length,saved:Math.round(saved)};
+  store.set("results",S.results); markDay();
+  S.submitted=true; render(); window.scrollTo(0,0);
+}
+function toast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),1600)}
+async function copy(text){try{await navigator.clipboard.writeText(text);toast("Copied")}catch(e){toast("Couldn't copy. Select the text instead.")}}
+function proModal(){
+  document.getElementById("modal").innerHTML=`
+    <div class="eyebrow">${APP_NAME} Pro</div>
+    <div class="price">$3<span style="font-size:15px;font-weight:500" class="muted">/month</span> <span style="font-size:14px" class="muted">or $24/year</span></div>
+    <p class="muted">One caught trap usually pays for years of Pro.</p>
+    <ul>
+      <li><b>Full case library</b>: all ${CASES.length} documents, any time, with new cases every month</li>
+      <li><b>Skill tracks</b>: housing, money, health, work, everyday</li>
+      <li><b>Script library</b>: every "what to say" line, searchable</li>
+      <li><b>Expert rounds</b>: replay cases with the trap count hidden</li>
+    </ul>
+    <div class="row"><button class="btn" data-act="togglepro">${S.pro?"Turn off Pro preview":"Preview Pro (prototype)"}</button><button class="btn alt" data-act="close">Not now</button></div>
+    <div class="note">Prototype: no payment is taken. The preview unlocks the archive so you can try every case.</div>`;
+  document.getElementById("scrim").classList.add("on");
+}
+
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.copy){copy(b.dataset.copy);return}
+  if(b.dataset.track){S.track=b.dataset.track;render();return}
+  if(b.dataset.go==="home"){S.view="home";render();window.scrollTo(0,0);return}
+  if(b.dataset.open!==undefined){ if(b.dataset.locked){proModal();return} openCase(+b.dataset.open);return}
+  if(b.dataset.line!==undefined && !S.submitted){const i=+b.dataset.line;S.flags.has(i)?S.flags.delete(i):S.flags.add(i);render();return}
+  const a=b.dataset.act;
+  if(a==="submit") submit();
+  else if(a==="pro") proModal();
+  else if(a==="close") document.getElementById("scrim").classList.remove("on");
+  else if(a==="togglepro"){S.pro=!S.pro;store.set("pro",S.pro);document.getElementById("scrim").classList.remove("on");render()}
+  else if(a==="share"){
+    const c=CASES[S.caseIdx], r=S.results[rkey(S.caseIdx)];
+    const traps=c.lines.map((l,i)=>({l,i})).filter(x=>x.l.trap);
+    const sq=traps.map(x=>r.flags.includes(x.i)?"🟩":"🟥").join("")+"⬜".repeat(r.false);
+    copy(`${APP_NAME} #${caseNo(S.caseIdx)} · ${c.title}\n${sq}\n${r.caught}/${r.total} traps caught, ${r.false} false alarm${r.false===1?"":"s"}`);
+  }
+});
+document.getElementById("scrim").addEventListener("click",e=>{if(e.target.id==="scrim")e.target.classList.remove("on")});
+render();
+</script>
+</body>
+</html>
