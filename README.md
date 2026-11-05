@@ -22,3 +22,9 @@ The documents and companies are fictional. The explanations are general educatio
 
 ## Build check
 Run `python3 build.py` before every push. It fails with a file:line list if any name in `retired-names.txt` appears outside `archive/`.
+
+## Before public launch (not built yet)
+Testers get the full library during their trial so they can explore freely. At rollout, lock it down so nobody can binge a month of content:
+- **Release by day:** only past days' cases unlock (like the NYT Games archive); future cases show their unlock date.
+- **Starter pack:** a few practice cases for day one, so new users aren't stuck with only one case.
+- **Real trial and payments:** accounts so progress follows the user across devices, plus a payment provider. The current trial lives only in the browser and can be reset.
