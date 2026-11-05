@@ -716,7 +716,7 @@ let S = {view:"home", caseIdx:null, flags:new Set(), submitted:false,
 
 // ---------- free trial (client-side, for testing only) ----------
 const TRIAL_DAYS = 7;
-if(location.hash==="#tester-reset"){ store.set("trialStart",null); store.set("vote",null); store.set("endShown",null); history.replaceState(null,"",location.pathname); }
+if(location.hash==="#tester-reset"){ store.set("trialStart",null); store.set("vote",null); store.set("vote2",null); store.set("endShown",null); history.replaceState(null,"",location.pathname); }
 const today0 = () => { const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); };
 if(!store.get("trialStart",null)) store.set("trialStart", today0());
 const trialLeft = () => Math.max(0, TRIAL_DAYS - Math.floor((today0() - store.get("trialStart",today0())) / 864e5));
@@ -858,7 +858,7 @@ function submit(){
 function toast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),1600)}
 async function copy(text){try{await navigator.clipboard.writeText(text);toast("Copied")}catch(e){toast("Couldn't copy. Select the text instead.")}}
 function proModal(){
-  const left=trialLeft(), vote=store.get("vote",null);
+  const left=trialLeft(), vote=store.get("vote",null), vote2=store.get("vote2",null);
   const perks=`<ul>
       <li><b>Full case library</b>: all ${CASES.length} documents, any time, with new cases every month</li>
       <li><b>Skill tracks</b>: housing, money, health, work, everyday</li>
@@ -885,6 +885,12 @@ function proModal(){
       <button class="btn ${vote==="maybe"?"accent":"alt"}" data-vote="maybe">Maybe, at a lower price</button>
       <button class="btn ${vote==="no"?"accent":"alt"}" data-vote="no">No</button>
     </div>
+    <p style="margin-top:14px"><b>Would you use it if your bank, employer or school offered it free?</b></p>
+    <div class="row">
+      <button class="btn ${vote2==="yes"?"accent":"alt"}" data-vote2="yes">Yes</button>
+      <button class="btn ${vote2==="maybe"?"accent":"alt"}" data-vote2="maybe">Maybe</button>
+      <button class="btn ${vote2==="no"?"accent":"alt"}" data-vote2="no">No</button>
+    </div>
     ${FEEDBACK_URL?`<p style="margin-top:12px"><a href="${FEEDBACK_URL}" target="_blank" rel="noopener">Tell us why (1 min) →</a></p>`:""}
     <div class="note">Prototype: no payment is taken; this is a test of whether people would pay.</div>
     <div class="row" style="margin-top:10px"><button class="btn alt" data-act="close">Not now</button></div>`;
@@ -896,6 +902,7 @@ document.addEventListener("click",e=>{
   if(b.dataset.copy){copy(b.dataset.copy);return}
   if(b.dataset.track){S.track=b.dataset.track;render();return}
   if(b.dataset.vote){store.set("vote",b.dataset.vote);toast("Thanks, that really helps");proModal();return}
+  if(b.dataset.vote2){store.set("vote2",b.dataset.vote2);toast("Thanks, that really helps");proModal();return}
   if(b.dataset.go==="home"){S.view="home";render();window.scrollTo(0,0);return}
   if(b.dataset.open!==undefined){ if(b.dataset.locked){proModal();return} openCase(+b.dataset.open);return}
   if(b.dataset.line!==undefined && !S.submitted){const i=+b.dataset.line;S.flags.has(i)?S.flags.delete(i):S.flags.add(i);render();return}
